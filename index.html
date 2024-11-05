@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kids Math Quiz Game</title>
+  <style>
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #f9e2ae;
+      padding: 10px;
+    }
+
+    .container {
+      text-align: center;
+      background: #ffffff;
+      padding: 30px; /* Increased padding */
+      border-radius: 12px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      max-width: 90%; /* Ensure it fits on mobile */
+      width: 500px; /* Increased width for larger screens */
+      overflow: hidden;
+    }
+
+    h1 {
+      color: #ff8c42;
+      font-size: 2em; /* Increased font size for the title */
+      margin: 0;
+      line-height: 1.2;
+    }
+
+    .level, .lives {
+      font-size: 1.5em; /* Increased font size for better visibility */
+      margin-top: 10px;
+    }
+
+    .question {
+      font-size: 1.5em;
+      margin: 20px 0;
+      color: #333333;
+    }
+
+    .answer {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 15px;
+    }
+
+    .answer input {
+      width: 100px; /* Increased input width */
+      padding: 10px; /* Increased padding */
+      font-size: 1.2em; /* Increased font size */
+      text-align: center;
+      border: 2px solid #ffcc66;
+      border-radius: 8px;
+      outline: none;
+    }
+
+    .button {
+      background-color: #4CAF50;
+      color: white;
+      padding: 12px 16px; /* Increased padding */
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1.2em; /* Increased font size */
+      margin: 5px; /* Adjust margin for buttons */
+      flex-grow: 1;
+      max-width: 160px; /* Max width for buttons */
+    }
+
+    .button:hover {
+      background-color: #45a049;
+    }
+
+    .result {
+      margin-top: 10px;
+      font-size: 1.5em; /* Increased font size for results */
+      color: #555555;
+    }
+
+    .mission-container {
+      margin-top: 20px;
+      padding: 15px; /* Increased padding */
+      background-color: #e6f7ff;
+      border-radius: 10px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .mission-title {
+      font-size: 1.5em; /* Increased font size for mission title */
+      font-weight: bold;
+      color: #007acc;
+    }
+
+    .mission-progress {
+      font-size: 1.2em; /* Increased font size for mission progress */
+      color: #333;
+      margin-top: 5px;
+    }
+
+    .level-container {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      font-size: 1.5em; /* Increased font size for level */
+      color: #007acc;
+    }
+  </style>
+</head>
+<body>
+  <div class="level-container">Level: <span id="levelCount">1</span> 🎈</div>
+  <div class="container">
+    <h1>Math Quiz Game</h1>
+    <div class="lives">Lives: <span id="livesCount">5</span> 🎈</div>
+    <div class="question" id="question">What is 5 + 3?</div>
+    <div class="answer">
+      <input type="number" id="answer" placeholder="Your Answer">
+    </div>
+    <div style="display: flex; justify-content: center; flex-wrap: wrap;">
+      <button class="button" onclick="checkAnswer()">Submit</button>
+      <button class="button" onclick="skipQuestion()">Skip Question</button>
+      <button class="button" onclick="startVoiceRecognition()">Speak Answer</button>
+    </div>
+    <div class="result" id="result"></div>
+
+    <div class="mission-container">
+      <div class="mission-title">Missions:</div>
+      <div class="mission-progress" id="missionProgress">Answer 2 questions correctly to earn 1 extra life.</div>
+    </div>
+  </div>
+
+  <script>
+    const questionElement = document.getElementById("question");
+    const answerElement = document.getElementById("answer");
+    const resultElement = document.getElementById("result");
+    const livesCountElement = document.getElementById("livesCount");
+    const missionProgressElement = document.getElementById("missionProgress");
+    const levelCountElement = document.getElementById("levelCount");
+
+    let currentQuestion, correctAnswer;
+    let livesCount = 5;
+    let correctAnswerCount = 0;
+    let levelCount = 1;
+
+    function generateQuestion() {
+      const num1 = Math.floor(Math.random() * 10) + 1;
+      const num2 = Math.floor(Math.random() * 10) + 1;
+      const operations = ["+", "-", "*", "/"];
+      const operation = operations[Math.floor(Math.random() * operations.length)];
+
+      switch (operation) {
+        case "+":
+          currentQuestion = `What is ${num1} + ${num2}?`;
+          correctAnswer = num1 + num2;
+          break;
+        case "-":
+          currentQuestion = `What is ${num1} - ${num2}?`;
+          correctAnswer = num1 - num2;
+          break;
+        case "*":
+          currentQuestion = `What is ${num1} × ${num2}?`;
+          correctAnswer = num1 * num2;
+          break;
+        case "/":
+          const dividend = num1 * num2;
+          currentQuestion = `What is ${dividend} ÷ ${num2}?`;
+          correctAnswer = dividend / num2;
+          break;
+      }
+
+      questionElement.textContent = currentQuestion;
+      answerElement.value = "";
+      resultElement.textContent = "";
+    }
+
+    function checkAnswer() {
+      const userAnswer = parseInt(answerElement.value);
+      if (userAnswer === correctAnswer) {
+        resultElement.textContent = "Correct! 🎉";
+        resultElement.style.color = "#4CAF50";
+        correctAnswerCount++;
+
+        missionProgressElement.textContent = `Progress: ${correctAnswerCount}/2 correct answers`;
+
+        if (correctAnswerCount === 2) {
+          livesCount++;
+          levelCount++;
+          livesCountElement.textContent = livesCount;
+          levelCountElement.textContent = levelCount;
+
+          missionProgressElement.textContent = "Mission completed! 🎈 You earned an extra life!";
+          correctAnswerCount = 0; // Reset mission counter
+
+          setTimeout(() => {
+            missionProgressElement.textContent = "Answer 2 questions correctly to earn 1 extra life.";
+          }, 3000);
+        }
+
+        setTimeout(generateQuestion, 2000);
+      } else {
+        resultElement.textContent = "Wrong! ❌";
+        resultElement.style.color = "#e63946";
+        livesCount--;
+        livesCountElement.textContent = livesCount;
+
+        if (livesCount === 0) {
+          resultElement.textContent = "Game Over! 💔";
+          document.querySelectorAll(".button").forEach(button => button.disabled = true);
+        }
+      }
+    }
+
+    function skipQuestion() {
+      livesCount--;
+      livesCountElement.textContent = livesCount;
+      resultElement.textContent = "Question skipped! You lost one life. ❌";
+      resultElement.style.color = "#e63946";
+
+      if (livesCount > 0) {
+        setTimeout(generateQuestion, 2000);
+      } else {
+        resultElement.textContent = "Game Over! 💔";
+        document.querySelectorAll(".button").forEach(button => button.disabled = true);
+      }
+    }
+
+    function startVoiceRecognition() {
+      const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+      recognition.lang = 'en-US';
+      recognition.onresult = function(event) {
+        const transcript = event.results[0][0].transcript;
+        answerElement.value = transcript; // Set the recognized text to the input field
+      };
+      recognition.start();
+    }
+
+    // Initialize the game with the first question
+    generateQuestion();
+  </script>
+</body>
+</html>
