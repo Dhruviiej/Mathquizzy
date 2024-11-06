@@ -154,7 +154,7 @@
 </head>
 <body class="default-theme">
   <div class="container">
-    <h1>Ninja  Quiz</h1>
+    <h1>Ninja Quiz</h1>
 
     <!-- 3 Dots Menu -->
     <div class="dots-menu" onclick="toggleMenu()">&#x2022;&#x2022;&#x2022;</div>
@@ -220,6 +220,8 @@
           resultElement.textContent = "Correct! 🎉";
           levelCount++;
           levelCountElement.textContent = levelCount;
+          livesCount++;  // Reward extra life on correct answer
+          livesCountElement.textContent = livesCount;  // Update the lives display
           generateQuestion();
         } else {
           resultElement.textContent = "Oops! Try again.";
