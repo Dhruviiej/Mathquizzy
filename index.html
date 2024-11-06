@@ -23,6 +23,10 @@
       background: linear-gradient(135deg, #FFDDC1, #FFABAB);
     }
 
+    .dark-theme {
+      background: linear-gradient(135deg, #2E3B4E, #1D1F30);
+    }
+
     /* Container Styling */
     .container {
       width: 90%;
@@ -131,6 +135,36 @@
       display: block;
     }
 
+    /* Shop Styling */
+    .shop-section {
+      margin-top: 20px;
+      padding: 15px;
+      border-radius: 10px;
+      background-color: #FFEB3B;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+      display: none;
+      text-align: center;
+    }
+
+    .theme-option {
+      margin: 10px;
+      font-size: 1.2em;
+    }
+
+    .theme-button {
+      background-color: #66BB6A;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1em;
+    }
+
+    .theme-button:hover {
+      background-color: #4CAF50;
+    }
+
     /* Tournament Styling */
     .tournament-section {
       margin-top: 20px;
@@ -139,6 +173,7 @@
       background-color: #FFEB3B;
       box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
       display: none;
+      text-align: center;
     }
 
     .timer {
@@ -150,6 +185,30 @@
       font-size: 1.2em;
       margin-top: 10px;
     }
+
+    /* Home Section */
+    .home-section {
+      display: none;
+      margin-top: 20px;
+      padding: 15px;
+      background-color: #FFEB3B;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+      text-align: center;
+    }
+
+    .home-button {
+      background-color: #FF7043;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1.2em;
+    }
+
+    .home-button:hover {
+      background-color: #FF5722;
+    }
   </style>
 </head>
 <body class="default-theme">
@@ -159,9 +218,12 @@
     <!-- 3 Dots Menu -->
     <div class="dots-menu" onclick="toggleMenu()">&#x2022;&#x2022;&#x2022;</div>
     <div class="menu" id="menu">
-      <a href="#" onclick="showDivisions()">Only Division</a>
       <a href="#" onclick="showMultiplication()">Only Multiplication</a>
-      <a href="#" onclick="startTournament()">Start Tournament</a>
+      <a href="#" onclick="showDivision()">Only Division</a>
+      <a href="#" onclick="showAddition()">Only Addition</a> <!-- New Addition Option -->
+      <a href="#" onclick="openShop()">Shop</a>
+      <a href="#" onclick="openTournament()">Tournament</a>
+      <a href="#" onclick="openHome()">Home</a>
     </div>
 
     <!-- Level and Lives Display -->
@@ -187,6 +249,19 @@
     <!-- Result Display -->
     <div class="result" id="result"></div>
 
+    <!-- Shop Section -->
+    <div class="shop-section" id="shopSection">
+      <h3>Shop</h3>
+      <p>Spend your 🎈 to buy new themes!</p>
+      <div class="theme-option">
+        <button class="theme-button" onclick="buyTheme('default-theme')">Default Theme (Cost: 0 🎈)</button>
+      </div>
+      <div class="theme-option">
+        <button class="theme-button" onclick="buyTheme('dark-theme')">Dark Theme (Cost: 5 🎈)</button>
+      </div>
+      <button class="button" onclick="closeShop()">Close Shop</button>
+    </div>
+
     <!-- Tournament Section -->
     <div class="tournament-section" id="tournamentSection">
       <h3>Tournament</h3>
@@ -194,6 +269,13 @@
       <button class="button" onclick="enterTournament()">Enter Tournament (Cost: 10 🎈)</button>
       <div class="timer" id="timer">Time Left: 60s</div>
       <div class="question-count" id="questionCount">Questions Answered: 0</div>
+    </div>
+
+    <!-- Home Section -->
+    <div class="home-section" id="homeSection">
+      <h3>Welcome to Ninja Quiz</h3>
+      <p>Start fresh or view your progress.</p>
+      <button class="home-button" onclick="goHome()">Start Quiz</button>
     </div>
   </div>
 
@@ -205,6 +287,7 @@
     let questionsAnswered = 0;
     let timerInterval;
     let questionType = "addition";  // Default to addition
+    let currentTheme = "default-theme"; // Default theme
 
     const resultElement = document.getElementById("result");
     const livesCountElement = document.getElementById("livesCount");
@@ -212,16 +295,18 @@
     const timerElement = document.getElementById("timer");
     const questionCountElement = document.getElementById("questionCount");
     const tournamentSection = document.getElementById("tournamentSection");
+    const shopSection = document.getElementById("shopSection");
+    const homeSection = document.getElementById("homeSection");
 
     function checkAnswer() {
       const userAnswer = parseInt(document.getElementById("answer").value);
       if (!tournamentActive) {
         if (userAnswer === correctAnswer) {
           resultElement.textContent = "Correct! 🎉";
+          livesCount++;  // Award one life for correct answer
+          livesCountElement.textContent = livesCount;
           levelCount++;
           levelCountElement.textContent = levelCount;
-          livesCount++;  // Reward extra life on correct answer
-          livesCountElement.textContent = livesCount;  // Update the lives display
           generateQuestion();
         } else {
           resultElement.textContent = "Oops! Try again.";
@@ -248,18 +333,66 @@
     }
 
     function generateQuestion() {
-      let num1 = Math.floor(Math.random() * 10) + 1;
-      let num2 = Math.floor(Math.random() * 10) + 1;
+      let num1 = Math.floor(Math.random() * (levelCount * 10)) + 1;  // Increase difficulty by level
+      let num2 = Math.floor(Math.random() * (levelCount * 10)) + 1;  // Increase difficulty by level
 
       if (questionType === "addition") {
         correctAnswer = num1 + num2;
         document.getElementById("question").textContent = `What is ${num1} + ${num2}?`;
-      } else if (questionType === "division") {
-        correctAnswer = num1 / num2;
-        document.getElementById("question").textContent = `What is ${num1} ÷ ${num2}?`;
       } else if (questionType === "multiplication") {
         correctAnswer = num1 * num2;
         document.getElementById("question").textContent = `What is ${num1} × ${num2}?`;
+      } else if (questionType === "division") {
+        correctAnswer = Math.floor(num1 / num2);
+        document.getElementById("question").textContent = `What is ${num1} ÷ ${num2}?`;
+      }
+    }
+
+    function toggleMenu() {
+      const menu = document.getElementById("menu");
+      menu.classList.toggle("show-menu");
+    }
+
+    function openShop() {
+      shopSection.style.display = "block";
+      tournamentSection.style.display = "none";
+      homeSection.style.display = "none";
+      toggleMenu();
+    }
+
+    function closeShop() {
+      shopSection.style.display = "none";
+    }
+
+    function openTournament() {
+      tournamentSection.style.display = "block";
+      shopSection.style.display = "none";
+      homeSection.style.display = "none";
+      toggleMenu();
+    }
+
+    function openHome() {
+      homeSection.style.display = "block";
+      tournamentSection.style.display = "none";
+      shopSection.style.display = "none";
+      toggleMenu();
+    }
+
+    function buyTheme(theme) {
+      if (theme === "dark-theme" && livesCount >= 5) {
+        livesCount -= 5;
+        livesCountElement.textContent = livesCount;
+        currentTheme = theme;
+        document.body.className = theme;
+        closeShop();
+      } else if (theme === "default-theme" && livesCount >= 0) {
+        livesCount -= 0;
+        livesCountElement.textContent = livesCount;
+        currentTheme = theme;
+        document.body.className = theme;
+        closeShop();
+      } else {
+        alert("You don't have enough 🎈 to buy this theme!");
       }
     }
 
@@ -275,7 +408,6 @@
     }
 
     function enterTournament() {
-      // Tournament logic: Answer 10 hard questions
       tournamentActive = true;
       questionsAnswered = 0;
       generateQuestion();
@@ -296,12 +428,14 @@
       }, 1000);
     }
 
-    function toggleMenu() {
-      const menu = document.getElementById("menu");
-      menu.classList.toggle("show-menu");
+    function goHome() {
+      homeSection.style.display = "none";
+      generateQuestion();
+      resultElement.textContent = "";
+      tournamentSection.style.display = "none";
     }
 
-    function showDivisions() {
+    function showDivision() {
       questionType = "division";
       generateQuestion();
       toggleMenu();
@@ -309,6 +443,12 @@
 
     function showMultiplication() {
       questionType = "multiplication";
+      generateQuestion();
+      toggleMenu();
+    }
+
+    function showAddition() {
+      questionType = "addition";  // Set question type to addition
       generateQuestion();
       toggleMenu();
     }
