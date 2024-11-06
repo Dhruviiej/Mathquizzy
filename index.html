@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ninja Quiz</title>
+  <style>
+    /* General Styling */
+    body {
+      font-family: 'Comic Sans MS', sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+      overflow: hidden;
+      padding: 15px;
+    }
+
+    /* Default Theme */
+    .default-theme {
+      background: linear-gradient(135deg, #FFDDC1, #FFABAB);
+    }
+
+    /* Container Styling */
+    .container {
+      width: 90%;
+      max-width: 400px;
+      background: #FFFFFF;
+      border-radius: 20px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      padding: 20px;
+      text-align: center;
+      position: relative;
+    }
+
+    /* Header */
+    h1 {
+      font-size: 2.4em;
+      margin: 0;
+      padding-bottom: 10px;
+    }
+
+    /* Info Cards */
+    .info-cards {
+      display: flex;
+      justify-content: space-around;
+      margin-top: 10px;
+    }
+
+    .info-card {
+      background-color: #FFF3E0;
+      border-radius: 10px;
+      padding: 10px 15px;
+      width: 45%;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+      font-weight: bold;
+      text-align: center;
+    }
+
+    /* Question and Answer */
+    .question {
+      font-size: 1.5em;
+      margin: 20px 0;
+    }
+
+    .answer input {
+      width: 100px;
+      padding: 10px;
+      font-size: 1.2em;
+      text-align: center;
+      border: 2px solid #4DB6AC;
+      border-radius: 10px;
+      outline: none;
+    }
+
+    /* Buttons */
+    .button {
+      background-color: #FFA726;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1em;
+      margin: 10px 5px;
+      transition: background-color 0.3s ease;
+    }
+
+    .button:hover {
+      background-color: #FF8A65;
+    }
+
+    /* 3 Dots Menu */
+    .dots-menu {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      font-size: 2em;
+      cursor: pointer;
+    }
+
+    .menu {
+      display: none;
+      position: absolute;
+      top: 40px;
+      left: 0;
+      background-color: #FFF3E0;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      width: 150px;
+      padding: 10px;
+      z-index: 1;
+    }
+
+    .menu a {
+      display: block;
+      padding: 8px;
+      text-decoration: none;
+      color: #333;
+      font-weight: bold;
+    }
+
+    .menu a:hover {
+      background-color: #FFA726;
+      color: white;
+    }
+
+    .show-menu {
+      display: block;
+    }
+
+    /* Tournament Styling */
+    .tournament-section {
+      margin-top: 20px;
+      padding: 15px;
+      border-radius: 10px;
+      background-color: #FFEB3B;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+      display: none;
+    }
+
+    .timer {
+      font-size: 1.2em;
+      margin-top: 10px;
+    }
+
+    .question-count {
+      font-size: 1.2em;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body class="default-theme">
+  <div class="container">
+    <h1>Ninja  Quiz</h1>
+
+    <!-- 3 Dots Menu -->
+    <div class="dots-menu" onclick="toggleMenu()">&#x2022;&#x2022;&#x2022;</div>
+    <div class="menu" id="menu">
+      <a href="#" onclick="showDivisions()">Only Division</a>
+      <a href="#" onclick="showMultiplication()">Only Multiplication</a>
+      <a href="#" onclick="startTournament()">Start Tournament</a>
+    </div>
+
+    <!-- Level and Lives Display -->
+    <div class="info-cards">
+      <div class="info-card">
+        Level: <span id="levelCount">1</span>
+      </div>
+      <div class="info-card">
+        🎈 Lives: <span id="livesCount">5</span>
+      </div>
+    </div>
+
+    <!-- Question and Answer Input -->
+    <div class="question" id="question">What is 5 + 3?</div>
+    <div class="answer">
+      <input type="number" id="answer" placeholder="Answer">
+    </div>
+
+    <!-- Action Buttons -->
+    <button class="button" onclick="checkAnswer()">Submit</button>
+    <button class="button" onclick="skipQuestion()">Skip</button>
+
+    <!-- Result Display -->
+    <div class="result" id="result"></div>
+
+    <!-- Tournament Section -->
+    <div class="tournament-section" id="tournamentSection">
+      <h3>Tournament</h3>
+      <p>Answer 10 hard questions to win 20 🎈.</p>
+      <button class="button" onclick="enterTournament()">Enter Tournament (Cost: 10 🎈)</button>
+      <div class="timer" id="timer">Time Left: 60s</div>
+      <div class="question-count" id="questionCount">Questions Answered: 0</div>
+    </div>
+  </div>
+
+  <script>
+    let correctAnswer = 8;  // Example answer for initial question
+    let livesCount = 5;
+    let levelCount = 1;
+    let tournamentActive = false;
+    let questionsAnswered = 0;
+    let timerInterval;
+    let questionType = "addition";  // Default to addition
+
+    const resultElement = document.getElementById("result");
+    const livesCountElement = document.getElementById("livesCount");
+    const levelCountElement = document.getElementById("levelCount");
+    const timerElement = document.getElementById("timer");
+    const questionCountElement = document.getElementById("questionCount");
+    const tournamentSection = document.getElementById("tournamentSection");
+
+    function checkAnswer() {
+      const userAnswer = parseInt(document.getElementById("answer").value);
+      if (!tournamentActive) {
+        if (userAnswer === correctAnswer) {
+          resultElement.textContent = "Correct! 🎉";
+          levelCount++;
+          levelCountElement.textContent = levelCount;
+          generateQuestion();
+        } else {
+          resultElement.textContent = "Oops! Try again.";
+        }
+      } else {
+        if (userAnswer === correctAnswer) {
+          questionsAnswered++;
+          questionCountElement.textContent = `Questions Answered: ${questionsAnswered}`;
+        }
+      }
+    }
+
+    function skipQuestion() {
+      if (!tournamentActive) {
+        if (livesCount > 0) {
+          livesCount--;
+          livesCountElement.textContent = livesCount;
+          generateQuestion();
+          resultElement.textContent = "Question skipped! -1 🎈";
+        } else {
+          resultElement.textContent = "You don't have enough 🎈 to skip a question.";
+        }
+      }
+    }
+
+    function generateQuestion() {
+      let num1 = Math.floor(Math.random() * 10) + 1;
+      let num2 = Math.floor(Math.random() * 10) + 1;
+
+      if (questionType === "addition") {
+        correctAnswer = num1 + num2;
+        document.getElementById("question").textContent = `What is ${num1} + ${num2}?`;
+      } else if (questionType === "division") {
+        correctAnswer = num1 / num2;
+        document.getElementById("question").textContent = `What is ${num1} ÷ ${num2}?`;
+      } else if (questionType === "multiplication") {
+        correctAnswer = num1 * num2;
+        document.getElementById("question").textContent = `What is ${num1} × ${num2}?`;
+      }
+    }
+
+    function startTournament() {
+      if (livesCount >= 10) {
+        livesCount -= 10;
+        livesCountElement.textContent = livesCount;
+        tournamentSection.style.display = "block";
+        startTimer();
+      } else {
+        resultElement.textContent = "You don't have enough 🎈 to enter the tournament!";
+      }
+    }
+
+    function enterTournament() {
+      // Tournament logic: Answer 10 hard questions
+      tournamentActive = true;
+      questionsAnswered = 0;
+      generateQuestion();
+      resultElement.textContent = "";
+    }
+
+    function startTimer() {
+      let timeLeft = 60;
+      timerInterval = setInterval(() => {
+        if (timeLeft > 0) {
+          timeLeft--;
+          timerElement.textContent = `Time Left: ${timeLeft}s`;
+        } else {
+          clearInterval(timerInterval);
+          tournamentActive = false;
+          resultElement.textContent = "Tournament Over!";
+        }
+      }, 1000);
+    }
+
+    function toggleMenu() {
+      const menu = document.getElementById("menu");
+      menu.classList.toggle("show-menu");
+    }
+
+    function showDivisions() {
+      questionType = "division";
+      generateQuestion();
+      toggleMenu();
+    }
+
+    function showMultiplication() {
+      questionType = "multiplication";
+      generateQuestion();
+      toggleMenu();
+    }
+  </script>
+</body>
+</html>
