@@ -188,13 +188,13 @@
     <!-- Question and Answer Input -->
     <div class="question" id="question">What is 31 + 46?</div>
     <div class="answer">
-      <input type="number" id="answer" placeholder="Answer" disabled>
+      <input type="number" id="answer" placeholder="Answer">
     </div>
 
     <!-- Action Buttons -->
     <button class="button" id="submitButton" onclick="checkAnswer()">Submit</button>
     <button class="button" id="nextButton" onclick="nextQuestion()" disabled>Next</button>
-    <button class="button" onclick="skipQuestion()">Skip</button>
+    <button class="button" id="skipButton" onclick="skipQuestion()">Skip</button>
 
     <!-- Result Display -->
     <div class="result" id="result"></div>
@@ -210,182 +210,117 @@
   <script>
     let currentQuestionIndex = 0;
     let currentQuestionType = 'addition';  // Default question type
+    let level = 1;
+    let lives = 5;
+    let xp = 0;
+    let answeredQuestions = []; // Array to track answered questions
     let questions = {
       addition: [
         { question: "What is 31 + 46?", answer: 31 + 46 },
         { question: "What is 62 + 11?", answer: 62 + 11 },
         { question: "What is 67 + 12?", answer: 67 + 12 },
         { question: "What is 51 + 41?", answer: 51 + 41 },
-        { question: "What is 26 + 30?", answer: 26 + 30 },
-        { question: "What is 22 + 15?", answer: 22 + 15 },
-        { question: "What is 14 + 81?", answer: 14 + 81 },
-        { question: "What is 12 + 30?", answer: 12 + 30 },
-        { question: "What is 56 + 23?", answer: 56 + 23 },
-        { question: "What is 10 + 57?", answer: 10 + 57 },
-        { question: "What is 71 + 26?", answer: 71 + 26 },
-        { question: "What is 22 + 32?", answer: 22 + 32 },
-        { question: "What is 16 + 32?", answer: 16 + 32 },
-        { question: "What is 13 + 35?", answer: 13 + 35 },
-        { question: "What is 41 + 24?", answer: 41 + 24 },
-        { question: "What is 64 + 11?", answer: 64 + 11 },
-        { question: "What is 31 + 17?", answer: 31 + 17 },
-        { question: "What is 16 + 61?", answer: 16 + 61 },
-        { question: "What is 51 + 14?", answer: 51 + 14 },
-        { question: "What is 35 + 30?", answer: 35 + 30 }
+        { question: "What is 26 + 30?", answer: 26 + 30 }
       ],
       subtraction: [
         { question: "What is 49 - 10?", answer: 49 - 10 },
-        { question: "What is 85 - 13?", answer: 85 - 13 },
-        { question: "What is 84 - 71?", answer: 84 - 71 },
-        { question: "What is 95 - 52?", answer: 95 - 52 },
-        { question: "What is 85 - 70?", answer: 85 - 70 },
-        { question: "What is 98 - 32?", answer: 98 - 32 },
-        { question: "What is 55 - 12?", answer: 55 - 12 },
-        { question: "What is 90 - 60?", answer: 90 - 60 },
-        { question: "What is 68 - 22?", answer: 68 - 22 },
-        { question: "What is 79 - 28?", answer: 79 - 28 },
-        { question: "What is 96 - 32?", answer: 96 - 32 },
-        { question: "What is 58 - 13?", answer: 58 - 13 },
-        { question: "What is 26 - 11?", answer: 26 - 11 },
-        { question: "What is 48 - 20?", answer: 48 - 20 },
-        { question: "What is 78 - 66?", answer: 78 - 66 },
-        { question: "What is 89 - 35?", answer: 89 - 35 },
-        { question: "What is 59 - 28?", answer: 59 - 28 },
-        { question: "What is 88 - 50?", answer: 88 - 50 },
-        { question: "What is 64 - 10?", answer: 64 - 10 },
-        { question: "What is 56 - 25?", answer: 56 - 25 }
+        { question: "What is 85 - 13?", answer: 85 - 13 }
       ],
       multiplication: [
-        { question: "What is 47 × 5?", answer: 47 * 5 },
-        { question: "What is 36 × 5?", answer: 36 * 5 },
-        { question: "What is 19 × 5?", answer: 19 * 5 },
-        { question: "What is 67 × 5?", answer: 67 * 5 },
-        { question: "What is 66 × 5?", answer: 66 * 5 },
-        { question: "What is 37 × 5?", answer: 37 * 5 },
-        { question: "What is 52 × 5?", answer: 52 * 5 },
-        { question: "What is 38 × 5?", answer: 38 * 5 },
-        { question: "What is 28 × 5?", answer: 28 * 5 },
-        { question: "What is 94 × 5?", answer: 94 * 5 },
-        { question: "What is 23 × 5?", answer: 23 * 5 },
-        { question: "What is 34 × 5?", answer: 34 * 5 },
-        { question: "What is 84 × 5?", answer: 84 * 5 },
-        { question: "What is 16 × 5?", answer: 16 * 5 },
-        { question: "What is 12 × 5?", answer: 12 * 5 },
-        { question: "What is 88 × 5?", answer: 88 * 5 },
-        { question: "What is 74 × 5?", answer: 74 * 5 },
-        { question: "What is 20 × 5?", answer: 20 * 5 },
-        { question: "What is 27 × 5?", answer: 27 * 5 },
-        { question: "What is 50 × 5?", answer: 50 * 5 }
+        { question: "What is 3 * 5?", answer: 3 * 5 },
+        { question: "What is 6 * 8?", answer: 6 * 8 }
       ],
       division: [
-        { question: "What is 20 ÷ 5?", answer: 20 / 5 },
-        { question: "What is 36 ÷ 6?", answer: 36 / 6 },
-        { question: "What is 45 ÷ 9?", answer: 45 / 9 },
-        { question: "What is 81 ÷ 9?", answer: 81 / 9 },
-        { question: "What is 64 ÷ 8?", answer: 64 / 8 },
-        { question: "What is 56 ÷ 7?", answer: 56 / 7 },
-        { question: "What is 90 ÷ 10?", answer: 90 / 10 },
-        { question: "What is 72 ÷ 8?", answer: 72 / 8 },
-        { question: "What is 48 ÷ 6?", answer: 48 / 6 },
-        { question: "What is 60 ÷ 5?", answer: 60 / 5 }
+        { question: "What is 36 ÷ 4?", answer: 36 / 4 },
+        { question: "What is 49 ÷ 7?", answer: 49 / 7 }
       ]
     };
 
-    let correctAnswer;
-    let xp = 0;
-    let levelCount = 1;
-    let livesCount = 5;
-    const xpBar = document.getElementById("xpBar");
-    const questionElement = document.getElementById("question");
-    const livesCountElement = document.getElementById("livesCount");
-    const levelCountElement = document.getElementById("levelCount");
-    const answerInput = document.getElementById("answer");
-    const resultElement = document.getElementById("result");
-    const submitButton = document.getElementById("submitButton");
-    const nextButton = document.getElementById("nextButton");
-
-    // Toggle the menu visibility
     function toggleMenu() {
-      document.getElementById("menu").classList.toggle("show-menu");
+      const menu = document.getElementById('menu');
+      menu.classList.toggle('show-menu');
     }
 
-    // Set the question type (addition, subtraction, etc.)
     function setQuestionType(type) {
       currentQuestionType = type;
       currentQuestionIndex = 0;
-      loadQuestion();
-      toggleMenu(); // Close the menu after selection
+      answeredQuestions = []; // Reset answered questions when question type changes
+      document.getElementById('nextButton').disabled = false;
+      displayQuestion();
     }
 
-    // Load the question based on the current type (addition, subtraction, etc.)
-    function loadQuestion() {
-      const currentQuestion = questions[currentQuestionType][currentQuestionIndex];
-      questionElement.textContent = currentQuestion.question;
-      correctAnswer = currentQuestion.answer;
-      answerInput.disabled = false;
-      submitButton.disabled = false;
-      nextButton.disabled = true;
+    function displayQuestion() {
+      const question = questions[currentQuestionType][currentQuestionIndex];
+      document.getElementById('question').textContent = question.question;
+      document.getElementById('result').textContent = ''; // Clear previous result
     }
 
-    // Check the user's answer
     function checkAnswer() {
-      const userAnswer = parseFloat(answerInput.value);
-      if (userAnswer === correctAnswer) {
-        xp += 10;
-        updateXPBar();
-        showMessage("Correct! +10 XP.");
+      const userAnswer = parseInt(document.getElementById('answer').value);
+      const correctAnswer = questions[currentQuestionType][currentQuestionIndex].answer;
+
+      if (userAnswer === correctAnswer && !answeredQuestions.includes(currentQuestionIndex)) {
+        xp += 10; // Gain XP
+        document.getElementById('xpBar').style.width = xp + '%';
+
+        if (xp >= 100) {
+          xp = 0;
+          level++;
+          document.getElementById('levelCount').textContent = level;
+        }
+
+        answeredQuestions.push(currentQuestionIndex); // Track answered questions
+        document.getElementById('result').textContent = 'Correct!';
       } else {
-        livesCount--;
-        livesCountElement.textContent = livesCount;
-        showMessage("Wrong answer! Lost 1 life.");
+        lives--;
+        document.getElementById('livesCount').textContent = lives;
+        document.getElementById('result').textContent = 'Incorrect!';
       }
-      submitButton.disabled = true;
-      nextButton.disabled = false;
+
+      if (lives <= 0) {
+        document.getElementById('result').textContent = 'Game Over!';
+        document.getElementById('nextButton').disabled = true;
+      }
+
+      document.getElementById('nextButton').disabled = false;
     }
 
-    // Move to the next question
     function nextQuestion() {
-      if (currentQuestionIndex < questions[currentQuestionType].length - 1) {
+      if (answeredQuestions.length < questions[currentQuestionType].length) {
         currentQuestionIndex++;
-        loadQuestion();
+        displayQuestion();
+        document.getElementById('answer').value = ''; // Clear input field
+        document.getElementById('nextButton').disabled = true;
       } else {
-        showMessage("End of questions!");
+        document.getElementById('result').textContent = 'You have answered all questions!';
       }
     }
 
-    // Skip the current question
     function skipQuestion() {
-      if (livesCount > 0) {
-        livesCount--;
-        livesCountElement.textContent = livesCount;
-        nextQuestion();
+      if (lives > 0) {
+        lives--; // Deduct a life when skipping
+        document.getElementById('livesCount').textContent = lives;
+        currentQuestionIndex++;
+        displayQuestion();
+      }
+    }
+
+    function buyTheme(theme) {
+      if (lives >= 10) {
+        lives -= 10; // Deduct 10 lives to buy a theme
+        document.getElementById('livesCount').textContent = lives;
+        alert('You have bought the ' + theme + ' theme!');
       } else {
-        showMessage("No more lives left!");
+        alert('Not enough lives to buy the theme!');
       }
     }
 
-    // Update the XP bar and level progress
-    function updateXPBar() {
-      const xpPercentage = Math.min(xp / 100, 1) * 100;
-      xpBar.style.width = `${xpPercentage}%`;
-
-      if (xp >= 100) {
-        xp = 0;
-        levelCount++;
-        levelCountElement.textContent = levelCount;
-        livesCount += 2; // Reward lives at each level
-        livesCountElement.textContent = livesCount;
-      }
+    function toggleShop() {
+      const shop = document.getElementById('shopSection');
+      shop.style.display = shop.style.display === 'none' ? 'block' : 'none';
     }
 
-    // Show a message (correct/wrong answer)
-    function showMessage(message) {
-      resultElement.textContent = message;
-      resultElement.classList.add("show");
-      setTimeout(() => resultElement.classList.remove("show"), 3000);
-    }
-
-    loadQuestion();
+    displayQuestion(); // Initialize the first question
   </script>
 </body>
 </html>
