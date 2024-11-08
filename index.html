@@ -108,6 +108,48 @@
       background-color: #FF8A65;
     }
 
+    /* Shop Window */
+    .shop-window {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 70%;
+      max-width: 400px;
+      background-color: #FFF3E0;
+      border-radius: 15px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      padding: 20px;
+      text-align: center;
+      z-index: 100;
+    }
+
+    .shop-window h3 {
+      margin-bottom: 20px;
+      font-size: 1.8em;
+    }
+
+    .shop-item {
+      margin: 15px 0;
+      font-size: 1.2em;
+    }
+
+    .shop-item button {
+      background-color: #FF9800;
+      color: white;
+      padding: 10px 15px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1.1em;
+      transition: background-color 0.3s ease;
+    }
+
+    .shop-item button:hover {
+      background-color: #FF5722;
+    }
+
     /* 3 Dots Menu */
     .dots-menu {
       position: absolute;
@@ -163,11 +205,7 @@
     <!-- 3 Dots Menu -->
     <div class="dots-menu" onclick="toggleMenu()">&#x2022;&#x2022;&#x2022;</div>
     <div class="menu" id="menu">
-      <a href="#" onclick="setQuestionType('addition')">Addition</a>
-      <a href="#" onclick="setQuestionType('subtraction')">Subtraction</a>
-      <a href="#" onclick="setQuestionType('multiplication')">Multiplication</a>
-      <a href="#" onclick="setQuestionType('division')">Division</a>
-      <a href="#" onclick="toggleShop()">Shop</a>
+      <a href="#"  onclick="openShopWindow()">Shop</a>
     </div>
 
     <!-- Level and Lives Display -->
@@ -188,7 +226,7 @@
     <!-- Question and Answer Input -->
     <div class="question" id="question">What is 31 + 46?</div>
     <div class="answer">
-      <input type="number" id="answer" placeholder="Answer">
+      <input type="number" id="answerInput" placeholder="Answer">
     </div>
 
     <!-- Action Buttons -->
@@ -200,40 +238,35 @@
     <div class="result" id="result"></div>
   </div>
 
-  <!-- Shop Section -->
-  <div id="shopSection" style="display:none; text-align:center;">
+  <!-- Shop Window -->
+  <div class="shop-window" id="shopWindow">
     <h3>Shop</h3>
-    <button class="button" onclick="buyTheme('space')">Buy Space Theme (Cost: 10 🎈)</button>
-    <button class="button" onclick="buyTheme('forest')">Buy Forest Theme (Cost: 10 🎈)</button>
+    <div class="shop-item">
+      Buy Jungle Theme: <button onclick="buyTheme('jungle')">Buy (Cost: 3 lives)</button>
+    </div>
+    <div class="shop-item">
+      Buy Space Theme: <button onclick="buyTheme('space')">Buy (Cost: 5 lives)</button>
+    </div>
+    <div class="shop-item">
+      Buy Desert Theme: <button onclick="buyTheme('desert')">Buy (Cost: 4 lives)</button>
+    </div>
+    <button class="button" onclick="closeShopWindow()">Close Shop</button>
   </div>
 
   <script>
     let currentQuestionIndex = 0;
-    let currentQuestionType = 'addition';  // Default question type
+    let currentQuestionType = 'addition';
     let level = 1;
     let lives = 5;
     let xp = 0;
-    let answeredQuestions = []; // Array to track answered questions
-    let questions = {
-      addition: [
-        { question: "What is 31 + 46?", answer: 31 + 46 },
-        { question: "What is 62 + 11?", answer: 62 + 11 },
-        { question: "What is 67 + 12?", answer: 67 + 12 },
-        { question: "What is 51 + 41?", answer: 51 + 41 },
-        { question: "What is 26 + 30?", answer: 26 + 30 }
-      ],
-      subtraction: [
-        { question: "What is 49 - 10?", answer: 49 - 10 },
-        { question: "What is 85 - 13?", answer: 85 - 13 }
-      ],
-      multiplication: [
-        { question: "What is 3 * 5?", answer: 3 * 5 },
-        { question: "What is 6 * 8?", answer: 6 * 8 }
-      ],
-      division: [
-        { question: "What is 36 ÷ 4?", answer: 36 / 4 },
-        { question: "What is 49 ÷ 7?", answer: 49 / 7 }
-      ]
+    let currentQuestion;
+    let currentAnswer;
+
+    const questions = {
+      addition: [{ question: "What is 31 + 46?", answer: 31 + 46 }],
+      subtraction: [{ question: "What is 49 - 10?", answer: 49 - 10 }],
+      multiplication: [{ question: "What is 3 * 5?", answer: 3 * 5 }],
+      division: [{ question: "What is 36 ÷ 4?", answer: 36 / 4 }]
     };
 
     function toggleMenu() {
@@ -243,84 +276,94 @@
 
     function setQuestionType(type) {
       currentQuestionType = type;
-      currentQuestionIndex = 0;
-      answeredQuestions = []; // Reset answered questions when question type changes
-      document.getElementById('nextButton').disabled = false;
-      displayQuestion();
+      generateMathQuestion();
     }
 
-    function displayQuestion() {
-      const question = questions[currentQuestionType][currentQuestionIndex];
-      document.getElementById('question').textContent = question.question;
-      document.getElementById('result').textContent = ''; // Clear previous result
+    function generateMathQuestion() {
+      const num1 = Math.floor(Math.random() * 10000) + 1;
+      const num2 = Math.floor(Math.random() * 1000) + 1;
+
+      switch (currentQuestionType) {
+        case 'addition':
+          currentQuestion = `${num1} + ${num2}`;
+          currentAnswer = num1 + num2;
+          break;
+        case 'subtraction':
+          currentQuestion = `${num1} - ${num2}`;
+          currentAnswer = num1 - num2;
+          break;
+        case 'multiplication':
+          currentQuestion = `${num1} * ${num2}`;
+          currentAnswer = num1 * num2;
+          break;
+        case 'division':
+          currentQuestion = `${num1} ÷ ${num2}`;
+          currentAnswer = num1 / num2;
+          break;
+      }
+
+      document.getElementById('question').innerText = currentQuestion;
+      document.getElementById('answerInput').value = '';
+      document.getElementById('submitButton').disabled = false;
+      document.getElementById('nextButton').disabled = true;
     }
 
     function checkAnswer() {
-      const userAnswer = parseInt(document.getElementById('answer').value);
-      const correctAnswer = questions[currentQuestionType][currentQuestionIndex].answer;
-
-      if (userAnswer === correctAnswer && !answeredQuestions.includes(currentQuestionIndex)) {
-        xp += 10; // Gain XP
-        document.getElementById('xpBar').style.width = xp + '%';
-
-        if (xp >= 100) {
-          xp = 0;
-          level++;
-          document.getElementById('levelCount').textContent = level;
-        }
-
-        answeredQuestions.push(currentQuestionIndex); // Track answered questions
-        document.getElementById('result').textContent = 'Correct!';
+      const userAnswer = parseInt(document.getElementById('answerInput').value);
+      if (userAnswer === currentAnswer) {
+        xp += 10;
+        updateStats();
+        document.getElementById('result').innerText = "Correct!";
       } else {
-        lives--;
-        document.getElementById('livesCount').textContent = lives;
-        document.getElementById('result').textContent = 'Incorrect!';
+        document.getElementById('result').innerText = "Incorrect!";
       }
-
-      if (lives <= 0) {
-        document.getElementById('result').textContent = 'Game Over!';
-        document.getElementById('nextButton').disabled = true;
-      }
-
+      document.getElementById('submitButton').disabled = true;
       document.getElementById('nextButton').disabled = false;
     }
 
     function nextQuestion() {
-      if (answeredQuestions.length < questions[currentQuestionType].length) {
-        currentQuestionIndex++;
-        displayQuestion();
-        document.getElementById('answer').value = ''; // Clear input field
-        document.getElementById('nextButton').disabled = true;
-      } else {
-        document.getElementById('result').textContent = 'You have answered all questions!';
+      currentQuestionIndex++;
+      if (currentQuestionIndex >= questions[currentQuestionType].length) {
+        currentQuestionIndex = 0;
       }
+      generateMathQuestion();
     }
 
     function skipQuestion() {
-      if (lives > 0) {
-        lives--; // Deduct a life when skipping
-        document.getElementById('livesCount').textContent = lives;
-        currentQuestionIndex++;
-        displayQuestion();
+      lives--;
+      updateStats();
+      generateMathQuestion();
+    }
+
+    function updateStats() {
+      document.getElementById('livesCount').innerText = lives;
+      if (lives <= 0) {
+        alert("Game Over!");
       }
+      const xpPercentage = (xp % 100) / 100 * 100;
+      document.getElementById('xpBar').style.width = `${xpPercentage}%`;
+    }
+
+    function openShopWindow() {
+      document.getElementById('shopWindow').style.display = 'block';
+    }
+
+    function closeShopWindow() {
+      document.getElementById('shopWindow').style.display = 'none';
     }
 
     function buyTheme(theme) {
-      if (lives >= 10) {
-        lives -= 10; // Deduct 10 lives to buy a theme
-        document.getElementById('livesCount').textContent = lives;
-        alert('You have bought the ' + theme + ' theme!');
+      const themeCosts = { jungle: 3, space: 5, desert: 4 };
+      if (lives >= themeCosts[theme]) {
+        lives -= themeCosts[theme];
+        updateStats();
+        alert(`You bought the ${theme} theme!`);
       } else {
-        alert('Not enough lives to buy the theme!');
+        alert('Not enough lives!');
       }
     }
 
-    function toggleShop() {
-      const shop = document.getElementById('shopSection');
-      shop.style.display = shop.style.display === 'none' ? 'block' : 'none';
-    }
-
-    displayQuestion(); // Initialize the first question
+    generateMathQuestion();
   </script>
 </body>
 </html>
